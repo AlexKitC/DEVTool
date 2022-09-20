@@ -1,2 +1,2 @@
 # DEVTool
-cross platform toolKit for developer
+Cross-platform toolkits for developers
