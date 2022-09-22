@@ -15,6 +15,8 @@ import qrcode
 import ttkbootstrap as ttk
 from PIL import Image, ImageTk
 
+from client.http import http
+
 
 class App:
     title = "Alex-黑白的工具包"
@@ -297,7 +299,7 @@ class App:
 
     # 渲染client：http
     def render_client_http(self):
-        pass
+        http(self.app)
 
     # 渲染二维码页面
     def render_qr_code(self):
@@ -355,9 +357,12 @@ class App:
 
     # 渲染非主页的返回按钮
     def render_back_btn(self, curr):
-        self.back_btn = ttk.Button(text="返回", bootstyle=self.btn_style_list[self.init_btn_random()],
+        self.back_btn = ttk.Button(text="返回",
+                                   master=self.app,
+                                   bootstyle=self.btn_style_list[self.init_btn_random()],
                                    command=lambda: self.go_to_home(curr))
-        self.back_btn.pack(padx=8, pady=8, side="left", anchor="n")
+        # self.back_btn.pack(padx=8, pady=8, side="left", anchor="n")
+        self.back_btn.grid(column=0, row=0, sticky="w", padx=8, pady=8)
 
     # 打开http_client
     def open_http_client(self):
@@ -377,11 +382,11 @@ class App:
     def show_author_info(self):
         label_author = ttk.Label(self.app, text="designed by: Alex-黑白",
                                  bootstyle=self.label_style_list[self.init_label_random()])
-        label_author.place(x=self.width - 148, y=self.height - 24)
+        label_author.place(x=self.width - 148, y=self.height - 20)
 
         self.change_theme_btn = ttk.Button(self.app, text="切换主题",
                                            command=self.random_theme)
-        self.change_theme_btn.place(x=self.width - 80, y=self.height - 64)
+        self.change_theme_btn.place(x=self.width - 80, y=self.height - 50)
 
     # 显示一个操作日志
     def show_operate_log(self, msg):
@@ -391,6 +396,9 @@ class App:
     # 通过返回进入主页
     def go_to_home(self, before_scene):
         self.back_btn.destroy()
+        # 清理子页面控件
+        self.app.destroy()
+        # 渲染home
         self.render_home()
         self.show_operate_log("用户从" + before_scene + "回到了home")
 
