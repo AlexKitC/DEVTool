@@ -9,7 +9,7 @@
 #   pip install pyinstaller
 
 # dist
-    # pyinstaller -w -F -n toolKit -i ico.icns main.py
+    # pyinstaller -w -F -n toolKit -i icon.icns main.py
 import random
 import tkinter as tk
 
@@ -376,6 +376,7 @@ class App:
     def listen_keyboard(self, event):
         if event.keysym == "Escape":
             self.go_to_home(self.current_scene)
+            self.current_scene = "root_frame"
 
     # 启动
     def start(self):
