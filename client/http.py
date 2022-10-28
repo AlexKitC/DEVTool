@@ -5,14 +5,13 @@ import ttkbootstrap as ttk
 from ttkbootstrap.dialogs import Messagebox
 
 
-class http:
-    def __init__(self, app):
+
+class http():
+    def __init__(self, frame):
+
         # url变量
         self.url_var = ttk.StringVar()
 
-        # http client container
-        frame = ttk.Frame(master=app)
-        frame.grid(column=0, row=1)
 
         # request容器
         req_header_frame = ttk.LabelFrame(master=frame, text="request")
@@ -83,3 +82,4 @@ class http:
             self.resp_text.delete("0.0", 'end')
             self.resp_text.insert('insert',
                                   json.dumps(json.loads(resp.content), sort_keys=True, indent=4, ensure_ascii=False))
+

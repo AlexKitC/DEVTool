@@ -1,10 +1,12 @@
-#!/usr/local/bin/python3.10
+#!/usr/local/bin/python3.9
 
-# mac: brew install python-tk@3.10
+# mac: brew install python-tk@3.9
 # pip dependency:
 #   pip install ttkbootstrap
 #   pip install qrcode
 #   pip install Pillow
+#   pip install requests
+#   pip install pyinstaller
 
 # dist
     # pyinstaller -w -F -n toolKit -i ico.icns main.py
@@ -13,20 +15,31 @@ import tkinter as tk
 
 import qrcode
 import ttkbootstrap as ttk
-from PIL import Image, ImageTk
 
+from app.qrcode_tool import qrcode_tool
 from client.http import http
 
 
 class App:
-    title = "Alex-黑白的工具包"
+    title = "Alex-黑白的工具包 按ESC返回主页"
 
     def __init__(self):
         self.app = tk.Tk()
+
+        self.app.bind_all("<Key>", self.listen_keyboard)
+
         self.title = self.title
         self.width = 960
         self.height = 640
         self.geometry = str(self.width) + "x" + str(self.height)
+
+        self.last_scene = ""
+        self.current_scene = "root_frame"
+
+        # client-http 容器
+        self.sec_view = tk.Frame(self.app)
+        # qrcode 容器
+        self.qr_code_container = tk.Frame(self.app)
 
         # 按钮风格
         self.btn_style_list = ['primary', 'success', 'info', 'warning',
@@ -64,8 +77,8 @@ class App:
                            'solar', 'superhero', 'darkly', 'cyborg']
 
         # log操作显示
-        self.sys_operate_log_Label = ttk.Label(self.app, bootstyle=self.label_style_list[self.init_label_random()])
-        self.sys_operate_log_Label.place(x=8, y=self.height - 24)
+        # self.sys_operate_log_Label = ttk.Label(self.root_frame, bootstyle=self.label_style_list[self.init_label_random()])
+        # self.sys_operate_log_Label.place(x=8, y=self.height - 24)
 
     # 随机鼠标悬浮样式
     def init_cusor_random(self):
@@ -94,7 +107,14 @@ class App:
         btn_pad_x = 6  # 按钮col间距
         pad_frame = 10  # frame的padding
 
-        self.frame_client = ttk.LabelFrame(self.app, text="client模拟",
+        # if hasattr(self, "root_frame"):
+        #     self.root_frame.destroy()
+
+        # 主页home容器
+        self.root_frame = tk.Frame(self.app)
+        self.root_frame.pack(side=tk.LEFT)
+
+        self.frame_client = ttk.LabelFrame(self.root_frame, text="client模拟",
                                            bootstyle=self.btn_style_list[self.init_btn_random()],
                                            padding=pad_frame)
         self.frame_client.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -130,7 +150,7 @@ class App:
                                  cursor=self.cursor_style_list[self.init_cusor_random()])
         btn_fastcgi.pack(padx=btn_pad_x, side="left")
 
-        self.frame_server = ttk.LabelFrame(self.app, text="server模拟",
+        self.frame_server = ttk.LabelFrame(self.root_frame, text="server模拟",
                                            bootstyle=self.btn_style_list[self.init_btn_random()],
                                            padding=pad_frame)
         self.frame_server.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -165,7 +185,7 @@ class App:
                                         cursor=self.cursor_style_list[self.init_cusor_random()])
         btn_fastcgi_server.pack(padx=btn_pad_x, side="left")
 
-        self.frame_json = ttk.LabelFrame(self.app, text="json",
+        self.frame_json = ttk.LabelFrame(self.root_frame, text="json",
                                          bootstyle=self.btn_style_list[self.init_btn_random()],
                                          padding=pad_frame)
         self.frame_json.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -175,7 +195,7 @@ class App:
                               cursor=self.cursor_style_list[self.init_cusor_random()])
         btn_json.pack(padx=btn_pad_x, side="left")
 
-        self.frame_crypto = ttk.LabelFrame(self.app, text="加解密",
+        self.frame_crypto = ttk.LabelFrame(self.root_frame, text="加解密",
                                            bootstyle=self.btn_style_list[self.init_btn_random()],
                                            padding=16)
         self.frame_crypto.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -195,7 +215,7 @@ class App:
                              cursor=self.cursor_style_list[self.init_cusor_random()])
         btn_aes.pack(padx=btn_pad_x, side="left")
 
-        self.frame_app = ttk.LabelFrame(self.app, text="常用app自实现集合",
+        self.frame_app = ttk.LabelFrame(self.root_frame, text="常用app自实现集合",
                                         bootstyle=self.btn_style_list[self.init_btn_random()],
                                         padding=pad_frame)
         self.frame_app.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -236,7 +256,7 @@ class App:
                                 cursor=self.cursor_style_list[self.init_cusor_random()])
         btn_pmeter.pack(padx=btn_pad_x, side="left")
 
-        self.frame_doc = ttk.LabelFrame(self.app, text="主流语言文档",
+        self.frame_doc = ttk.LabelFrame(self.root_frame, text="主流语言文档",
                                         bootstyle=self.btn_style_list[self.init_btn_random()],
                                         padding=pad_frame)
         self.frame_doc.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -256,7 +276,7 @@ class App:
                                     cursor=self.cursor_style_list[self.init_cusor_random()])
         btn_doc_golang.pack(padx=btn_pad_x, side="left")
 
-        self.frame_framework_doc = ttk.LabelFrame(self.app, text="主流框架文档",
+        self.frame_framework_doc = ttk.LabelFrame(self.root_frame, text="主流框架文档",
                                                   bootstyle=self.btn_style_list[self.init_btn_random()],
                                                   padding=pad_frame)
         self.frame_framework_doc.pack(padx=row_pad_x, pady=row_pad_y, anchor="w")
@@ -299,94 +319,45 @@ class App:
 
     # 渲染client：http
     def render_client_http(self):
-        http(self.app)
+        self.sec_view = tk.Frame()
+        self.sec_view.pack(side=tk.LEFT)
+        http(self.sec_view)
 
     # 渲染二维码页面
     def render_qr_code(self):
-        # 输入
-        entry_in = ttk.Entry(self.app,
-                             bootstyle=self.btn_style_list[self.init_btn_random()],
-                             width=64)
-        entry_in.focus()
-        entry_in.place(x=8, y=64)
+        self.sec_view = tk.Frame()
+        self.sec_view.pack(side=tk.TOP, anchor=tk.W)
+        qrcode_tool(self.sec_view)
 
-        # 生成按钮
-        create_qr_code_btn = ttk.Button(text="生成",
-                                        bootstyle=self.btn_style_list[self.init_btn_random()],
-                                        command=lambda: self.create_qr_code(entry_in.get()))
-        create_qr_code_btn.place(x=608, y=64)
-
-        # 可以配置的参数
-        self.version_scale = ttk.Scale(self.app,
-                                  bootstyle=self.btn_style_list[self.init_btn_random()],
-                                  from_=10,
-                                  value=1,
-                                  to=0,
-                                  command=self.t
-                                  )
-        self.version_scale.place(x=580, y = 120)
-
-    def t(self):
-        print(self.version_scale.getint())
-
-    # 生成二维码
-    def create_qr_code(self, text):
-        info_label = ttk.Label(text="", bootstyle=self.label_style_list[self.init_label_random()])
-        info_label.place(x=668, y=70)
-        if len(text) == 0:
-            info_label.configure(text="输入为空,请重新输入")
-        else:
-            qr = qrcode.QRCode(version=4,
-                               box_size=10,
-                               border=4,
-
-                               image_factory=None,
-                               mask_pattern=None)
-            qr.add_data(text)
-            img = qr.make_image()
-            img.save("qrcode.png")
-            pic = Image.open("qrcode.png")
-            pic_r = ImageTk.PhotoImage(pic)
-            l = ttk.Label(self.app, image=pic_r)
-            l.place(x=8, y=120)
 
     # 清理home控件
     def clear_home(self):
-        for frame in self.frame_list:
-            frame.destroy()
+        self.root_frame.destroy()
 
-    # 渲染非主页的返回按钮
-    def render_back_btn(self, curr):
-        self.back_btn = ttk.Button(text="返回",
-                                   master=self.app,
-                                   bootstyle=self.btn_style_list[self.init_btn_random()],
-                                   command=lambda: self.go_to_home(curr))
-        # self.back_btn.pack(padx=8, pady=8, side="left", anchor="n")
-        self.back_btn.grid(column=0, row=0, sticky="w", padx=8, pady=8)
 
     # 打开http_client
     def open_http_client(self):
         self.clear_home()
-        self.render_back_btn("client:http")
         self.render_client_http()
-        self.show_operate_log("用户进入了client模块:http")
+        self.current_scene = "sec_view"
+        # self.show_operate_log("用户进入了client模块:http")
 
     # 打开二维码
     def open_qr_code(self):
         self.clear_home()
-        self.render_back_btn("app:qrcode")
         self.render_qr_code()
-        self.show_operate_log("用户进入了app模块：qrcode")
+        self.current_scene = "sec_view"
+        # self.show_operate_log("用户进入了app模块：qrcode")
 
     # 打上作者大名
     def show_author_info(self):
-        label_author = ttk.Label(self.app, text="designed by: Alex-黑白",
+        label_author = ttk.Label(self.root_frame, text="designed by: Alex-黑白",
                                  bootstyle=self.label_style_list[self.init_label_random()])
-        label_author.place(x=self.width - 148, y=self.height - 20)
+        label_author.pack(side=tk.BOTTOM, anchor=tk.E)
 
-        self.change_theme_btn = ttk.Button(self.app, text="切换主题",
+        self.change_theme_btn = ttk.Button(self.root_frame, text="切换主题",
                                            command=self.random_theme)
-        self.change_theme_btn.place(x=self.width - 80, y=self.height - 50)
+        self.change_theme_btn.pack(side=tk.BOTTOM, anchor=tk.E)
 
     # 显示一个操作日志
     def show_operate_log(self, msg):
@@ -394,13 +365,17 @@ class App:
         self.sys_operate_log_Label.configure(text=msg)
 
     # 通过返回进入主页
-    def go_to_home(self, before_scene):
-        self.back_btn.destroy()
+    def go_to_home(self, current_scene):
         # 清理子页面控件
-        self.app.destroy()
+        self.__getattribute__(current_scene).destroy()
         # 渲染home
         self.render_home()
-        self.show_operate_log("用户从" + before_scene + "回到了home")
+        # self.show_operate_log("用户从" + before_scene + "回到了home")
+
+
+    def listen_keyboard(self, event):
+        if event.keysym == "Escape":
+            self.go_to_home(self.current_scene)
 
     # 启动
     def start(self):
