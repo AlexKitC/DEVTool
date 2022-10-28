@@ -19,3 +19,4 @@ QRCode, database tool, image diy, content editor,weather tool, api benchmark,doc
 
 ###### 2022-09-20 : proj init
 ###### 2022-09-22 : finished basic http-client
+###### 2022-10-28 : re-construct
