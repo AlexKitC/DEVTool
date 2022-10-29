@@ -36,10 +36,8 @@ class App:
         self.last_scene = ""
         self.current_scene = "root_frame"
 
-        # client-http 容器
+        # 子页面 容器
         self.sec_view = tk.Frame(self.app)
-        # qrcode 容器
-        self.qr_code_container = tk.Frame(self.app)
 
         # 按钮风格
         self.btn_style_list = ['primary', 'success', 'info', 'warning',

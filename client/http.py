@@ -1,4 +1,6 @@
 import json
+import threading
+import time
 
 import requests
 import ttkbootstrap as ttk
@@ -38,7 +40,7 @@ class http():
         # request_btn
         req_btn = ttk.Button(master=req_header_frame,
                              text="请求",
-                             command=self.req,
+                             command=self.do_req,
                              bootstyle="success")
         req_btn.grid(column=2, row=1, padx=8, ipadx=12)
 
@@ -71,6 +73,10 @@ class http():
         self.resp_text.see(ttk.END)
         self.resp_text.grid(column=0, row=0, padx=8)
 
+    def do_req(self):
+        t = threading.Thread(target=self.req)
+        t.start()
+
     def req(self):
         url_value = self.url_var.get()
         if len(url_value) < 7:
@@ -82,4 +88,3 @@ class http():
             self.resp_text.delete("0.0", 'end')
             self.resp_text.insert('insert',
                                   json.dumps(json.loads(resp.content), sort_keys=True, indent=4, ensure_ascii=False))
-
